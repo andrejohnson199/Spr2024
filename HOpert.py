@@ -9,15 +9,7 @@ from sympy.physics.sho import R_nl
 #specify V
 V = 5
 
-# #Shortened Version
-# nrange = 2
-# for i in range(nrange):
-#     for j in range(i+1):
-#         delE = 4*np.pi * V * R_nl(i,j,1,0)**2
-#         energy = E_nl(i,j,1) + delE
-#         print(energy)
-#print(R_nl(0,0,1,0))
-#Longer version 
+
 #Making nlm basis class
 class nlmbasis:
     def __init__(self,n,l,m):
@@ -41,7 +33,7 @@ class nlm2state:
         print(self.n1,self.l1,self.m1,' ',self.n2,self.l2,self.m2)
         
 
-    #Trouble making a working print statement
+    
 
 
 #Getting occupied states
@@ -68,13 +60,9 @@ while n<=N/2:
         if 2*n + l == N:
             m=-l
             while m<=l:
-                #print('l=',l,'m=',m)
-                #adding states
-                #SOMETHING WRONG HERE
-                #The array isnt taking the correct object i think??
                 nlmarr[i] = nlmbasis(n,l,m)
                 nlmarr[i].print_nlm()
-                #print(nlmarr[i].n)
+                
 
                 m+=1
                 i+=1
@@ -99,7 +87,7 @@ for n1 in range(nlmarr.size):
         nlm2arr[i].print_nlm2()
         i+=1
 
-        #Printing the check
+        
         
         
 
