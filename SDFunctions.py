@@ -47,6 +47,8 @@ def fillTwoStates(numSingle):
 #using surface delta potential
 def fillPotential(two,one,v,r):
     vMat = np.zeros((len(two),len(two)))
+    #Printing variable
+    i=0
     for row in range(len(vMat)):
         bra1 = one[two[row][0]]
         bra2 = one[two[row][1]]
@@ -54,10 +56,19 @@ def fillPotential(two,one,v,r):
             ket1 = one[two[col][0]]
             ket2 = one[two[col][1]]
 
-            #Rules
-            if bra1.l==ket1.l and bra2.l==ket2.l and bra1.m==ket1.m and bra2.m==ket2.m and bra1.ms==ket1.ms and bra2.ms==ket2.ms:
-                vMat[row][col] = -v * r * R_nl(bra1.n,bra1.l,1,r) * R_nl(bra2.n,bra2.l,1,r) * R_nl(ket1.n,bra1.l,1,r) * R_nl(ket1.n,bra1.l,1,r)
+            #Parity Rule
+            if (bra1.l-ket1.l)%2==(bra2.l-ket2.l)%2:
+                vMat[row][col] = -v * r**2 * R_nl(bra1.n,bra1.l,1,r) * R_nl(bra2.n,bra2.l,1,r) * R_nl(ket1.n,bra1.l,1,r) * R_nl(ket1.n,bra1.l,1,r)
 
                 #Printing nonzero elements to check
-                print(vMat[row][col],'Element:',row,col,' Ket1:',ket1.n,ket1.l,ket1.m,ket1.ms, ' Ket2:',ket2.n,ket2.l,ket2.m,ket2.ms, ' Bra1:',bra1.n,bra1.l,bra1.m,bra1.ms, ' Bra2:',bra2.n,bra2.l,bra2.m,bra2.ms,)
+                if i<10:
+                    print(vMat[row][col],'Element:',row,col,' Ket1:',ket1.n,ket1.l,ket1.m,ket1.ms, ' Ket2:',ket2.n,ket2.l,ket2.m,ket2.ms, ' Bra1:',bra1.n,bra1.l,bra1.m,bra1.ms, ' Bra2:',bra2.n,bra2.l,bra2.m,bra2.ms,)
+                    i+=1
+
+            # #Rules
+            # if bra1.l==ket1.l and bra2.l==ket2.l and bra1.m==ket1.m and bra2.m==ket2.m and bra1.ms==ket1.ms and bra2.ms==ket2.ms:
+            #     vMat[row][col] = -v * r**2 * R_nl(bra1.n,bra1.l,1,r) * R_nl(bra2.n,bra2.l,1,r) * R_nl(ket1.n,bra1.l,1,r) * R_nl(ket1.n,bra1.l,1,r)
+
+            #     #Printing nonzero elements to check
+            #     print(vMat[row][col],'Element:',row,col,' Ket1:',ket1.n,ket1.l,ket1.m,ket1.ms, ' Ket2:',ket2.n,ket2.l,ket2.m,ket2.ms, ' Bra1:',bra1.n,bra1.l,bra1.m,bra1.ms, ' Bra2:',bra2.n,bra2.l,bra2.m,bra2.ms,)
     return vMat

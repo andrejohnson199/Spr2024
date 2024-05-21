@@ -14,7 +14,7 @@ Nmax = 2
 
 #Next step is getting radius for the surface delta potential
 #And potential constant
-V0 = 5
+V0 = 1
 R = 1
 
 #Get all single particle states
