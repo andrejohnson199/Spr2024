@@ -29,10 +29,7 @@ def fillSingleStates(N):
     for n in range(int(N/2+1)):
         for l in range(N+1):
             if 2*n + l <= N:
-                # for j in range(abs(l-1/2),(l+1/2+1)):
-                #     nljarr = np.append(nljarr,[coupled(n,l,j,0)])
-                #     nljarr = np.append(nljarr,[coupled(n,l,j,1)])
-                j = abs(l-1/2)
+                j = l+1/2
                 if l == 0:
                     nljarr = np.append(nljarr,[coupled(n,l,j,0)])
                     nljarr = np.append(nljarr,[coupled(n,l,j,1)])
@@ -40,7 +37,7 @@ def fillSingleStates(N):
                     for i in range(2):
                         nljarr= np.append(nljarr,[coupled(n,l,j,0)])
                         nljarr = np.append(nljarr,[coupled(n,l,j,1)])
-                        j+=1
+                        j-=1        
     return nljarr
 
 def fillTwoStates(oneStates):
