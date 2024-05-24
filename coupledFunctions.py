@@ -6,15 +6,13 @@ import numpy as np
 from tabulate import tabulate
 from sympy.physics.wigner import wigner_3j
 
-#Ill right out all the different functions 
-#Then make it look neat later
 
+#Maybe add isospin later
 class coupled:
-    def __init__(self,n,l,j,ms):
+    def __init__(self,n,l,j):
         self.n = n
         self.l = l
         self.j = j
-        self.ms = ms
 
 class twoCoupled:
     def __init__(self,a,b,J,T):
@@ -22,9 +20,6 @@ class twoCoupled:
         self.b = b #index for single partice state
         self.J = J
         self.T = T
-
-#GETTING RID OF MS
-#I BELIEVE IT IS JUST DOUBLE THE AMOUNT I HAVE TO STORE
 
 #function to fill all single particle states
 #returns an array of all single particle states
@@ -35,32 +30,19 @@ def fillSingleStates(N):
             if 2*n + l <= N:
                 j = l+1/2
                 if l == 0:
-                    nljarr = np.append(nljarr,[coupled(n,l,j,0)])
-                    #nljarr = np.append(nljarr,[coupled(n,l,j,1)])
+                    nljarr = np.append(nljarr,[coupled(n,l,j)])
                 else:
                     for i in range(2):
-                        nljarr= np.append(nljarr,[coupled(n,l,j,0)])
-                        #nljarr = np.append(nljarr,[coupled(n,l,j,1)])
+                        nljarr= np.append(nljarr,[coupled(n,l,j)])
                         j-=1        
     return nljarr
 
 def fillTwoStates(oneStates):
     numSize = oneStates.size
-    #Setting T=1, like nucleons
-    #T=1
     twoArr = np.array([],dtype=twoCoupled)
     for i in range(numSize):
         a = oneStates[i]
         for k in range(numSize):
-            # if i!=k:
-            #     # a and b are the single particle states
-            #     b = oneStates[k]
-            #     #need to get the J coupling
-            #     for J in range(int(abs(a.j-b.j)),int(a.j+b.j)+1):
-            #         #T=0,1
-            #         twoArr = np.append(twoArr,[twoCoupled(i,k,J,0)])
-            #         twoArr = np.append(twoArr,[twoCoupled(i,k,J,1)])
-
             #WITHOUT MS
             # a and b are the single particle states
             b = oneStates[k]
@@ -75,8 +57,6 @@ def fillPotential(two,one):
     vMat = np.zeros((len(two),len(two)))
     #Table
     table = np.array(['abcd','J','T','V'])
-    #Printing index
-    i = 0
     aname = ''
     bname = ''
     cname = ''
@@ -89,23 +69,18 @@ def fillPotential(two,one):
 
         #Printing name
         if a.l==0:
-            aname = '0s1/2'
             aname = 1
         elif a.j==1.5:
-            aname = '0p3/2'
             aname = 2
         else:
-            aname = '0p1/2'
             aname = 3
         if b.l==0:
-            bname = '0s1/2'
             bname = 1
         elif b.j==1.5:
-            bname = '0p3/2'
             bname = 2
         else:
-            bname = '0p1/2'
             bname = 3
+
         for col in range(len(vMat)):
             c = one[two[col].a]
             d = one[two[col].b]
@@ -114,22 +89,16 @@ def fillPotential(two,one):
 
             #Printing name
             if c.l==0:
-                cname = '0s1/2'
                 cname = 1
             elif c.j==1.5:
-                cname = '0p3/2'
                 cname = 2
             else:
-                cname = '0p1/2'
                 cname = 3
             if d.l==0:
-                dname = '0s1/2'
                 dname = 1
             elif d.j==1.5:
-                dname = '0p3/2'
                 dname = 2
             else:
-                dname = '0p1/2'
                 dname = 3
 
             #Parity, J, and T need to match
@@ -140,13 +109,6 @@ def fillPotential(two,one):
 
                 #Do not need to print redundant states
                 if abs(vMat[row][col])>0 and cname<=dname and aname<=bname: 
-                    #print(vMat[row][col],'Element: ',row,col,' a: ',a.n,a.l,a.j,' b: ',b.n,b.l,b.j,' c: ',c.n,c.l,c.j,' d: ',d.n,d.l,d.j,' J: ',J1,' T: ',T1)
-
-                    #New Printing
-                    #print(vMat[row][col],'Element:',row,col,' abcd: ',orbits[0],orbits[1],orbits[2],orbits[3])
-                    #print(vMat[row][col],'Element:',row,col,' abcd: ',aname,bname,cname,dname,' J: ',J1,' T: ',T1)
-                    #print(aname,bname,cname,dname, ' ',J1,T1,' ',vMat[row][col])
-
                     #Adding to the table
                     tNum = 1000*aname+100*bname+10*cname+dname
                     table = np.vstack([table,[tNum,J1,T1,vMat[row][col]]])
