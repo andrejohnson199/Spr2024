@@ -7,6 +7,7 @@
 
 from hartreeFunctions import *
 
+
 #Need to know what element
 #Starting with 16 O
 numP = 8
@@ -18,5 +19,30 @@ N=1
 #Single Particle states
 #Fills Os and Op states
 singleStates = fillSingleStates(N,numP,numN)
-print(singleStates.size)
 #Need new fill SingleStates to include m projection and isospin
+
+#Also need two states
+#twoStates = fillTwoStates(singleStates)
+
+#Testing uncouple method
+vTest = vUncouple(singleStates[0],singleStates[2],singleStates[0],singleStates[2])
+print(vTest)
+#print(vElement(singleStates[0],singleStates[2],singleStates[0],singleStates[2],0,1))
+#print(vElement(singleStates[0],singleStates[2],singleStates[0],singleStates[2],1,1))
+
+#Testing clebsch gordan
+#print(cg(1/2,1/2,0,-1/2,1/2,1))
+
+#Testing Hamiltonian
+Ham, pots = H(singleStates)
+#print(Ham)
+#print(pots)
+print('Finished initial H build, now starting HF ')
+# #Run HF
+Val,Vec = HF(Ham,singleStates,pots)
+print(Val)
+print(Vec)
+
+
+#Build the Hamiltonian(HF)
+#H = buildHF()

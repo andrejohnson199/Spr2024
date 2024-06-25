@@ -5,6 +5,7 @@
 import numpy as np
 from tabulate import tabulate
 from sympy.physics.wigner import wigner_3j
+from sympy.physics.wigner import clebsch_gordan as cg
 
 
 #Maybe add isospin later
