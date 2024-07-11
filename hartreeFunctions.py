@@ -39,13 +39,13 @@ def fillSingleStates(N,pTot,nTot):
                         if pFill < pTot:
                             t=-1/2
                             nljarr = np.append(nljarr,[coupled(n,l,j,m,t)])
-                            #print(n,l,j,m,t)
+                            print(n,l,j,m,t)
                             pFill+=1
                         #Putting a neutron in
                         if nFill < nTot:
                             t=1/2
                             nljarr = np.append(nljarr,[coupled(n,l,j,m,t)])
-                            #print(n,l,j,m,t)
+                            print(n,l,j,m,t)
                             nFill+=1
                         m+=1
                 else:
@@ -55,13 +55,13 @@ def fillSingleStates(N,pTot,nTot):
                             if pFill < pTot:
                                 t=-1/2
                                 nljarr = np.append(nljarr,[coupled(n,l,j,m,t)])
-                                #print(n,l,j,m,t)
+                                print(n,l,j,m,t)
                                 pFill+=1
                             #Putting a neutron in
                             if nFill < nTot:
                                 t=1/2
                                 nljarr = np.append(nljarr,[coupled(n,l,j,m,t)])
-                                #print(n,l,j,m,t)
+                                print(n,l,j,m,t)
                                 nFill+=1
                             m+=1
                         j-=1
@@ -129,6 +129,10 @@ def vUncouple(a,b,c,d):
         #print("Parity Failed")
         return vReturn
     
+    #Isospin check
+    if a.t+b.t != c.t+d.t:
+        return vReturn
+    
     #Summation over J, J for both two particle states must be equal
     for J1 in range(int(abs(a.j-b.j)),int(a.j+b.j)+1):
         for J2 in range(int(abs(c.j-d.j)),int(c.j+d.j)+1):
@@ -173,88 +177,179 @@ def vUncouple(a,b,c,d):
 #Think I only need single states
 #Returns H and array of uncoupled potential matrix elements
 #This is to save time
-def H(singleStates):
+# def H(singleStates):
+#     #Matrix of the singleStates
+#     hReturn = np.zeros((singleStates.size,singleStates.size))
+#     #Array for potential values
+#     vReturn = np.zeros(singleStates.size**(4))
+#     i=0
+#     for row in range(singleStates.size):
+#         for col in range(singleStates.size):
+#             #Getting kinetic part
+#             if row==col:
+#                 hReturn[row][col] = 2*singleStates[row].n + singleStates[row].l
+
+#             #HF wavefunctions and potential
+
+#             #Skipping a bit to the summation over j1 and j2
+#             #I believe this summation is over only the states below the fermi surface
+#             #But we are using 16 O, so all states are used
+#             #Might throw errors if j1=row and j2=col
+#             for j1 in range(singleStates.size):
+#                 for j2 in range(singleStates.size):
+#                     p1 = vUncouple(singleStates[row],singleStates[j1],singleStates[col],singleStates[j2])
+#                     # print(p1)
+#                     vReturn[i] = p1
+#                     i+=1
+                    
+#                     #Initial run, use HO radial wavefunctions
+#                     hReturn[row][col] += R_nl(singleStates[j1].n,singleStates[j1].l,1,1)*p1*R_nl(singleStates[j2].n,singleStates[j2].l,1,1)
+#     return hReturn, vReturn
+
+#New initial H building method
+def newH(singleStates):
+    #C matrix is for beta and j values
+    #Initially it is the identity
+    #beta is column, j is row
+    printSize = 0
+    numPrint = 16
+    C = np.identity(singleStates.size)
+
     #Matrix of the singleStates
     hReturn = np.zeros((singleStates.size,singleStates.size))
     #Array for potential values
-    vReturn = np.zeros(singleStates.size**(4))
-    i=0
-    for row in range(singleStates.size):
-        for col in range(singleStates.size):
+    
+
+    #Row and column indeces for hReturn
+    for j in range(singleStates.size):
+        for k in range(singleStates.size):
             #Getting kinetic part
-            if row==col:
-                hReturn[row][col] = 2*singleStates[row].n + singleStates[row].l
+            if j==k:
+                hReturn[j][k] = 2*singleStates[j].n + singleStates[j].l
 
-            #HF wavefunctions and potential
+            #Loop to cycle through beta terms(occupied orbits)
+            #Hard coded 16, will fix later
+            for b in range(16):
+                #Loops to cycle through all orbits
+                for j1 in range(singleStates.size):
+                    for j2 in range(singleStates.size):
+                        p1 = C[b][j1]
+                        p3 = C[j2][b]
+                        #Most of these will be zero
+                        if p1!=0 and p3!=0:
+                            p2 = vUncouple(singleStates[j],singleStates[j1],singleStates[k],singleStates[j2])
+                            if printSize < numPrint:
+                                #print('Uncoupled V: ',j,j1,k,j2,':',p2)
+                                printSize+=1
 
-            #Skipping a bit to the summation over j1 and j2
-            #I believe this summation is over only the states below the fermi surface
-            #But we are using 16 O, so all states are used
-            #Might throw errors if j1=row and j2=col
-            for j1 in range(singleStates.size):
-                for j2 in range(singleStates.size):
-                    p1 = vUncouple(singleStates[row],singleStates[j1],singleStates[col],singleStates[j2])
-                    # print(p1)
-                    vReturn[i] = p1
-                    i+=1
-                    
-                    #Initial run, use HO radial wavefunctions
-                    hReturn[row][col] += R_nl(singleStates[j1].n,singleStates[j1].l,1,1)*p1*R_nl(singleStates[j2].n,singleStates[j2].l,1,1)
-    return hReturn, vReturn
+                            hReturn[j][k] += p1*p2*p3
+                            #Printing off-diagonal terms
+                            #There shouldnt be any
+                            if j!=k and hReturn[j][k]!=0:
+                                print('Off-Diagonal V: ',j,j1,k,j2,':',p2)
+
+
+    return hReturn
+
 
 #Overloading H
 #New parameters are eigenvectors
 #Since the original H happens before this, should store vUncouple values somewhere
-def H2(singleStates,eVectors,pots):
-    #Matrix of the singleStates
-    hReturn = np.zeros((singleStates.size,singleStates.size))
-    i=0
-    for row in range(singleStates.size):
-        for col in range(singleStates.size):
-            #Getting kinetic part
-            if row==col:
-                hReturn[row][col] = 2*singleStates[row].n + singleStates[row].l
+# def H2(singleStates,eVectors,pots):
+#     #Matrix of the singleStates
+#     hReturn = np.zeros((singleStates.size,singleStates.size))
+#     i=0
+#     for row in range(singleStates.size):
+#         for col in range(singleStates.size):
+#             #Getting kinetic part
+#             if row==col:
+#                 hReturn[row][col] = 2*singleStates[row].n + singleStates[row].l
 
-            #HF wavefunctions and potential
+#             #HF wavefunctions and potential
 
-            #Skipping a bit to the summation over j1 and j2
-            #I believe this summation is over only the states below the fermi surface
-            #But we are using 16 O, so all states are used
-            #Might throw errors if j1=row and j2=col
-            for j1 in range(singleStates.size):
-                for j2 in range(singleStates.size):
-                    p1 = pots[i]
-                    i+=1
-                    # p1 = vUncouple(singleStates[row],singleStates[j1],singleStates[col],singleStates[j2])
+#             #Skipping a bit to the summation over j1 and j2
+#             #I believe this summation is over only the states below the fermi surface
+#             #But we are using 16 O, so all states are used
+#             #Might throw errors if j1=row and j2=col
+#             for j1 in range(singleStates.size):
+#                 for j2 in range(singleStates.size):
+#                     p1 = pots[i]
+#                     i+=1
+#                     # p1 = vUncouple(singleStates[row],singleStates[j1],singleStates[col],singleStates[j2])
                     
-                    #Initial run, use HO radial wavefunctions
-                    #hReturn[row][col] += R_nl(singleStates[j1].n,singleStates[j1].l,1,1)*p1*R_nl(singleStates[j2].n,singleStates[j2].l,1,1)
+#                     #Initial run, use HO radial wavefunctions
+#                     #hReturn[row][col] += R_nl(singleStates[j1].n,singleStates[j1].l,1,1)*p1*R_nl(singleStates[j2].n,singleStates[j2].l,1,1)
 
-                    #Need to get correct eigenvector and its transpose
-                    colVec = eVectors[:,j2]
-                    rowVec = eVectors[:,j1]
-                    #Build Storage for p1
-                    hReturn[row][col] += np.vdot(rowVec,p1*colVec)
+#                     #Need to get correct eigenvector and its transpose
+#                     colVec = eVectors[:,j2]
+#                     rowVec = eVectors[:,j1]
+#                     #Build Storage for p1
+#                     hReturn[row][col] += np.vdot(rowVec,p1*colVec)
+#     return hReturn
+
+#New H2 process
+def newH2(ham,C,singleStates):
+    #The C matrix is eVec from newHF
+    #C matrix is for beta and j values
+    #rows and cols are equal
+    rows,cols = ham.shape
+
+    #Matrix of the singleStates
+    hReturn = np.zeros((rows,cols))
+
+    #Row and column indeces for hReturn
+    for j in range(rows):
+        for k in range(cols):
+            #Getting kinetic part
+            if j==k:
+                hReturn[j][k] = 2*singleStates[j].n + singleStates[j].l
+
+            #Loop to cycle through beta terms(occupied orbits)
+            #Hard coded 16, will fix later
+            for b in range(16):
+                #Loops to cycle through all orbits
+                for j1 in range(singleStates.size):
+                    for j2 in range(singleStates.size):
+                        p1 = C[b][j1]
+                        p3 = C[j2][b]
+                        #Most of these will be zero
+                        if p1!=0 and p3!=0:
+                            p2 = vUncouple(singleStates[j],singleStates[j1],singleStates[k],singleStates[j2])
+                            hReturn[j][k] += p1*p2*p3
     return hReturn
 
 
 
 #HF process
 #Diagonalize and record eigenvalues and eigenkets
-def HF(ham,singleStates,pots):
-    runs = 0
+# def HF(ham,singleStates,pots):
+#     runs = 0
+#     eVal, eVec = LA.eig(ham)
+
+#     #Not sure how important eVal is for 16 O, as this is full
+#     #Need to rerun Hamiltonian calculation with new eigenvectors
+#     newH = H2(singleStates,eVec,pots)
+#     eVal2, eVec2 = LA.eig(newH)
+#     while(not np.allclose(eVal,eVal2)):
+#         eVal, eVec = eVal2, eVec2
+#         eVal2, eVec2 = LA.eig(H2(singleStates,eVec,pots))
+#         runs+=1
+    
+#     print('Number of runs: ',runs)
+#     return eVal, eVec
+
+#new HF method process for new H process
+def newHF(ham,singleStates):
+    runs = 1
     eVal, eVec = LA.eig(ham)
 
-    #Not sure how important eVal is for 16 O, as this is full
-    #Need to rerun Hamiltonian calculation with new eigenvectors
-    newH = H2(singleStates,eVec,pots)
-    eVal2, eVec2 = LA.eig(newH)
+    #Rebuild Hamiltonian
+    nextH = newH2(ham,eVec,singleStates)
+    eVal2, eVec2 = LA.eig(nextH)
     while(not np.allclose(eVal,eVal2)):
         eVal, eVec = eVal2, eVec2
-        eVal2, eVec2 = LA.eig(H2(singleStates,eVec,pots))
+        eVal2, eVec2 = LA.eig(newH2(ham,eVec,singleStates))
         runs+=1
-    
-    print('Number of runs: ',runs)
-    return eVal, eVec
 
-#
+    print('Number of runs: ', runs)
+    return eVal, eVec
