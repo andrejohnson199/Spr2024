@@ -2,9 +2,11 @@
 #Mostly reformatting coupledFunction files
 #Andre Johnson
 import numpy as np
-from coupledFunctions import *
+#from coupledFunctions import *
 from sympy.physics.sho import R_nl
 from numpy import linalg as LA
+from sympy.physics.wigner import wigner_3j
+from sympy.physics.wigner import clebsch_gordan as cg
 
 
 class coupled:
@@ -88,7 +90,7 @@ def fillTwoStates(oneStates):
 
 #New normalization factor
 #includes mj
-def N(a,b,J,T):
+def N2(a,b,J,T):
     s = 0
     #Might have to include ms in if condition, not sure
     if a.n==b.n and a.l==b.l and a.j==b.j and a.m==b.m:
@@ -157,8 +159,8 @@ def vUncouple(a,b,c,d):
 
                             #Normalization check
                             p1 = 0
-                            if N(a,b,J1,T1)!=-1 and N(c,d,J1,T1)!=-1:
-                                p1 = (N(a,b,J1,T1)*N(c,d,J1,T1))**(-1)
+                            if N2(a,b,J1,T1)!=-1 and N2(c,d,J1,T1)!=-1:
+                                p1 = (N2(a,b,J1,T1)*N2(c,d,J1,T1))**(-1)
 
                             #Coupled Matrix Element
                             p4 = vElement(a,b,c,d,J1,T1)
@@ -250,6 +252,41 @@ def newH(singleStates):
 
 
     return hReturn
+
+#NEW 7/15
+#Adding in J and T check
+#if a and b are equal
+def W(a,b,J,T):
+    w = 0
+    if a.n==b.n and a.l==b.l and a.j==b.j and (-1)**(J+T+1)==1:
+       w = 1
+    return w
+
+#This is the simplified potential
+def K(a,b,c,d):
+    #Set A_T equal to 1 to match book
+    A_T = 1
+    return -(1/4)*A_T*(-1)**(a.n+b.n+c.n+d.n)
+
+def N(a,b,J,T):
+    s = 0
+    #Might have to include ms in if condition, not sure
+    if a.n==b.n and a.l==b.l and a.j==b.j:
+        s = 1
+    return ((1-s*(-1)**(J+T))**(1/2))/(1+s)
+
+def jHat(a):
+    return (2*a.j+1)**(1/2)
+
+def vElement(a,b,c,d,J,T):
+    #One long expression broken up in pieces
+    p1 = K(a,b,c,d)*N(a,b,J,T)*N(c,d,J,T)
+    p2 = (1+(-1)**(a.l+b.l+c.l+d.l))*jHat(a)*jHat(b)*jHat(c)*jHat(d)
+    #Next two go p3-p4
+    p3 = (1+(-1)**T)*wigner_3j(a.j,b.j,J,1/2,1/2,-1)*wigner_3j(c.j,d.j,J,1/2,1/2,-1)
+    p4 = (-1)**(a.l+c.l+b.j+d.j)*(1-(-1)**(c.l+d.l+J+T))*wigner_3j(a.j,b.j,J,1/2,-1/2,0)*wigner_3j(c.j,d.j,J,1/2,-1/2,0)
+    p5 = W(a,b,J,T)*W(c,d,J,T)
+    return p1*p2*(p3-p4)*p5
 
 
 #Overloading H

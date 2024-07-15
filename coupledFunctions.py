@@ -123,7 +123,11 @@ def fillPotential(two,one):
     #     print('1=0s1/2, 2=0p3/2, 3=0p1/2',file=f)
     return vMat
 
-
+#NEW 7/15
+#Adding in J and T check
+#if a and b are equal
+#def W(a,b,J,T):
+#    if a.n==b.n and a.l==b.l and a.j==b.j and a.t==b.t
 
 #This is the simplified potential
 def K(a,b,c,d):
